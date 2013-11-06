@@ -27,17 +27,17 @@ var queryStringParam = /^\?(.*)/,
 Backbone.Router.arrayValueSplit = '|';
 
 var _getFragment = function(fragment, forcePushState) {
+  var root = this.options.root.replace(trailingSlash, '');
   if (fragment == null) {
-    if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-      fragment = this.location.pathname;
-      var root = this.root.replace(trailingSlash, '');
-      var search = this.location.search;
-      if (!fragment.indexOf(root)) fragment = fragment.substr(root.length);
+    if (window.location && (this._hasPushState || !this._wantsHashChange || forcePushState)) {
+      fragment = window.location.pathname;
+      var search = window.location.search;
       if (search) fragment += search;
     } else {
       fragment = this.getHash();
     }
   }
+  if (!fragment.indexOf(root)) fragment = fragment.substr(root.length);
   return fragment.replace(routeStripper, '');
 }
 
@@ -170,7 +170,9 @@ _.extend(Backbone.Router.prototype, {
 
     for (var i=0; i<length; i++) {
       if (_.isString(params[i])) {
-        params[i] = decodeURIComponent(params[i]);
+        // for compatibility with Backbone 0.9.2, we will not
+        // decode the params
+        // params[i] = decodeURIComponent(params[i]);
         if (route.paramNames && route.paramNames.length >= i-1) {
           namedParams[route.paramNames[i]] = params[i];
         }
