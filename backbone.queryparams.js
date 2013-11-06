@@ -1,3 +1,5 @@
+// Version 1.0.0 from @gaxunil backport to support Backbone version 0.9.2
+// https://github.com/gaxunil/backbone-query-parameters
 (function (root, factory) {
    if (typeof exports === 'object' && root.require) {
      module.exports = factory(require("underscore"), require("backbone"));
