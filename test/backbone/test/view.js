@@ -7,204 +7,168 @@ $(document).ready(function() {
     setup: function() {
       view = new Backbone.View({
         id        : 'test-view',
-        className : 'test-view',
-        other     : 'non-special-option'
+        className : 'test-view'
       });
     }
 
   });
 
-  test("constructor", 3, function() {
+  test("View: constructor", function() {
     equal(view.el.id, 'test-view');
     equal(view.el.className, 'test-view');
-    equal(view.el.other, void 0);
+    equal(view.options.id, 'test-view');
+    equal(view.options.className, 'test-view');
   });
 
-  test("jQuery", 1, function() {
-    var view = new Backbone.View;
-    view.setElement('<p><a><b>test</b></a></p>');
-    strictEqual(view.$('a b').html(), 'test');
+  test("View: jQuery", function() {
+    view.setElement(document.body);
+    ok(view.$('#qunit-header a').get(0).innerHTML.match(/Backbone Test Suite/));
+    ok(view.$('#qunit-header a').get(1).innerHTML.match(/Backbone Speed Suite/));
   });
 
-  test("initialize", 1, function() {
+  test("View: make", function() {
+    var div = view.make('div', {id: 'test-div'}, "one two three");
+    equal(div.tagName.toLowerCase(), 'div');
+    equal(div.id, 'test-div');
+    equal($(div).text(), 'one two three');
+  });
+
+  test("View: initialize", function() {
     var View = Backbone.View.extend({
       initialize: function() {
         this.one = 1;
       }
     });
-
-    strictEqual(new View().one, 1);
+    var view = new View;
+    equal(view.one, 1);
   });
 
-  test("delegateEvents", 6, function() {
-    var counter1 = 0, counter2 = 0;
-
-    var view = new Backbone.View({el: '<p><a id="test"></a></p>'});
-    view.increment = function(){ counter1++; };
-    view.$el.on('click', function(){ counter2++; });
-
-    var events = {'click #test': 'increment'};
-
+  test("View: delegateEvents", function() {
+    var counter = 0;
+    var counter2 = 0;
+    view.setElement(document.body);
+    view.increment = function(){ counter++; };
+    view.$el.bind('click', function(){ counter2++; });
+    var events = {"click #qunit-banner": "increment"};
     view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
+    $('#qunit-banner').trigger('click');
+    equal(counter, 1);
     equal(counter2, 1);
-
-    view.$('#test').trigger('click');
-    equal(counter1, 2);
+    $('#qunit-banner').trigger('click');
+    equal(counter, 2);
     equal(counter2, 2);
-
     view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 3);
+    $('#qunit-banner').trigger('click');
+    equal(counter, 3);
     equal(counter2, 3);
   });
 
-  test("delegateEvents allows functions for callbacks", 3, function() {
-    var view = new Backbone.View({el: '<p></p>'});
+  test("View: delegateEvents allows functions for callbacks", function() {
     view.counter = 0;
-
-    var events = {
-      click: function() {
-        this.counter++;
-      }
-    };
-
+    view.setElement("#qunit-banner");
+    var events = {"click": function() { this.counter++; }};
     view.delegateEvents(events);
-    view.$el.trigger('click');
+    $('#qunit-banner').trigger('click');
     equal(view.counter, 1);
-
-    view.$el.trigger('click');
+    $('#qunit-banner').trigger('click');
     equal(view.counter, 2);
-
     view.delegateEvents(events);
-    view.$el.trigger('click');
+    $('#qunit-banner').trigger('click');
     equal(view.counter, 3);
   });
 
-
-  test("delegateEvents ignore undefined methods", 0, function() {
-    var view = new Backbone.View({el: '<p></p>'});
-    view.delegateEvents({'click': 'undefinedMethod'});
-    view.$el.trigger('click');
-  });
-
-  test("undelegateEvents", 6, function() {
-    var counter1 = 0, counter2 = 0;
-
-    var view = new Backbone.View({el: '<p><a id="test"></a></p>'});
-    view.increment = function(){ counter1++; };
-    view.$el.on('click', function(){ counter2++; });
-
-    var events = {'click #test': 'increment'};
-
+  test("View: undelegateEvents", function() {
+    var counter = 0;
+    var counter2 = 0;
+    view.setElement(document.body);
+    view.increment = function(){ counter++; };
+    $(view.el).unbind('click');
+    $(view.el).bind('click', function(){ counter2++; });
+    var events = {"click #qunit-userAgent": "increment"};
     view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
+    $('#qunit-userAgent').trigger('click');
+    equal(counter, 1);
     equal(counter2, 1);
-
     view.undelegateEvents();
-    view.$('#test').trigger('click');
-    equal(counter1, 1);
+    $('#qunit-userAgent').trigger('click');
+    equal(counter, 1);
     equal(counter2, 2);
-
     view.delegateEvents(events);
-    view.$('#test').trigger('click');
-    equal(counter1, 2);
+    $('#qunit-userAgent').trigger('click');
+    equal(counter, 2);
     equal(counter2, 3);
   });
 
-  test("_ensureElement with DOM node el", 1, function() {
-    var View = Backbone.View.extend({
+  test("View: _ensureElement with DOM node el", function() {
+    var ViewClass = Backbone.View.extend({
       el: document.body
     });
-
-    equal(new View().el, document.body);
+    var view = new ViewClass;
+    equal(view.el, document.body);
   });
 
-  test("_ensureElement with string el", 3, function() {
-    var View = Backbone.View.extend({
+  test("View: _ensureElement with string el", function() {
+    var ViewClass = Backbone.View.extend({
       el: "body"
     });
-    strictEqual(new View().el, document.body);
+    var view = new ViewClass;
+    equal(view.el, document.body);
 
-    View = Backbone.View.extend({
-      el: "#testElement > h1"
+    ViewClass = Backbone.View.extend({
+      el: "body > h2"
     });
-    strictEqual(new View().el, $("#testElement > h1").get(0));
+    view = new ViewClass;
+    equal(view.el, $("#qunit-banner").get(0));
 
-    View = Backbone.View.extend({
+    ViewClass = Backbone.View.extend({
       el: "#nonexistent"
     });
-    ok(!new View().el);
+    view = new ViewClass;
+    ok(!view.el);
   });
 
-  test("with className and id functions", 2, function() {
-    var View = Backbone.View.extend({
-      className: function() {
-        return 'className';
-      },
-      id: function() {
-        return 'id';
-      }
-    });
-
-    strictEqual(new View().el.className, 'className');
-    strictEqual(new View().el.id, 'id');
+  test("View: with attributes", function() {
+    var view = new Backbone.View({attributes : {'class': 'one', id: 'two'}});
+    equal(view.el.className, 'one');
+    equal(view.el.id, 'two');
   });
 
-  test("with attributes", 2, function() {
-    var View = Backbone.View.extend({
-      attributes: {
-        id: 'id',
-        'class': 'class'
-      }
-    });
-
-    strictEqual(new View().el.className, 'class');
-    strictEqual(new View().el.id, 'id');
-  });
-
-  test("with attributes as a function", 1, function() {
-    var View = Backbone.View.extend({
+  test("View: with attributes as a function", function() {
+    var viewClass = Backbone.View.extend({
       attributes: function() {
         return {'class': 'dynamic'};
       }
     });
-
-    strictEqual(new View().el.className, 'dynamic');
+    equal((new viewClass).el.className, 'dynamic');
   });
 
-  test("multiple views per element", 3, function() {
-    var count = 0;
-    var $el = $('<p></p>');
-
-    var View = Backbone.View.extend({
-      el: $el,
+  test("View: multiple views per element", function() {
+    var count = 0, ViewClass = Backbone.View.extend({
+      el: $("body"),
       events: {
-        click: function() {
-          count++;
-        }
+        "click": "click"
+      },
+      click: function() {
+        count++;
       }
     });
 
-    var view1 = new View;
-    $el.trigger("click");
+    var view1 = new ViewClass;
+    $("body").trigger("click");
     equal(1, count);
 
-    var view2 = new View;
-    $el.trigger("click");
+    var view2 = new ViewClass;
+    $("body").trigger("click");
     equal(3, count);
 
     view1.delegateEvents();
-    $el.trigger("click");
+    $("body").trigger("click");
     equal(5, count);
   });
 
-  test("custom events, with namespaces", 2, function() {
+  test("View: custom events, with namespaces", function() {
     var count = 0;
-
-    var View = Backbone.View.extend({
+    var ViewClass = Backbone.View.extend({
       el: $('body'),
       events: function() {
         return {"fake$event.namespaced": "run"};
@@ -214,117 +178,32 @@ $(document).ready(function() {
       }
     });
 
-    var view = new View;
+    var view = new ViewClass;
     $('body').trigger('fake$event').trigger('fake$event');
     equal(count, 2);
-
     $('body').unbind('.namespaced');
     $('body').trigger('fake$event');
     equal(count, 2);
   });
 
-  test("#1048 - setElement uses provided object.", 2, function() {
+  test("#1048 - setElement uses provided object.", function() {
     var $el = $('body');
-
     var view = new Backbone.View({el: $el});
     ok(view.$el === $el);
-
     view.setElement($el = $($el));
     ok(view.$el === $el);
   });
 
   test("#986 - Undelegate before changing element.", 1, function() {
-    var button1 = $('<button></button>');
-    var button2 = $('<button></button>');
-
+    var a = $('<button></button>');
+    var b = $('<button></button>');
     var View = Backbone.View.extend({
-      events: {
-        click: function(e) {
-          ok(view.el === e.target);
-        }
-      }
+      events: {click: function(e) { ok(view.el === e.target); }}
     });
-
-    var view = new View({el: button1});
-    view.setElement(button2);
-
-    button1.trigger('click');
-    button2.trigger('click');
-  });
-
-  test("#1172 - Clone attributes object", 2, function() {
-    var View = Backbone.View.extend({
-      attributes: {foo: 'bar'}
-    });
-
-    var view1 = new View({id: 'foo'});
-    strictEqual(view1.el.id, 'foo');
-
-    var view2 = new View();
-    ok(!view2.el.id);
-  });
-
-  test("#1228 - tagName can be provided as a function", 1, function() {
-    var View = Backbone.View.extend({
-      tagName: function() {
-        return 'p';
-      }
-    });
-
-    ok(new View().$el.is('p'));
-  });
-
-  test("views stopListening", 0, function() {
-    var View = Backbone.View.extend({
-      initialize: function() {
-        this.listenTo(this.model, 'all x', function(){ ok(false); }, this);
-        this.listenTo(this.collection, 'all x', function(){ ok(false); }, this);
-      }
-    });
-
-    var view = new View({
-      model: new Backbone.Model,
-      collection: new Backbone.Collection
-    });
-
-    view.stopListening();
-    view.model.trigger('x');
-    view.collection.trigger('x');
-  });
-
-  test("Provide function for el.", 1, function() {
-    var View = Backbone.View.extend({
-      el: function() {
-        return "<p><a></a></p>";
-      }
-    });
-
-    var view = new View;
-    ok(view.$el.is('p:has(a)'));
-  });
-
-  test("events passed in options", 2, function() {
-    var counter = 0;
-
-    var View = Backbone.View.extend({
-      el: '<p><a id="test"></a></p>',
-      increment: function() {
-        counter++;
-      }
-    });
-
-    var view = new View({events:{'click #test':'increment'}});
-    var view2 = new View({events:function(){
-      return {'click #test':'increment'};
-    }});
-
-    view.$('#test').trigger('click');
-    view2.$('#test').trigger('click');
-    equal(counter, 2);
-
-    view.$('#test').trigger('click');
-    view2.$('#test').trigger('click');
-    equal(counter, 4);
+    var view = new View({el: a});
+    view.setElement(b);
+    a.trigger('click');
+    b.trigger('click');
   });
 
 });
