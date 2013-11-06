@@ -137,12 +137,14 @@ $(document).ready(function() {
 
   });
 
-  test("Route callback gets passed DECODED values.", 3, function() {
+  // This test was reverted back to use undecoded values, which
+  // matches what backbone 0.9.2 would do
+  test("Route callback gets passed UNDECODED values.", 3, function() {
     var route = 'has%2Fslash/complex-has%23hash/has%20space';
     Backbone.history.navigate(route, {trigger: true});
-    strictEqual(router.first, 'has/slash');
-    strictEqual(router.part, 'has#hash');
-    strictEqual(router.rest, 'has space');
+    strictEqual(router.first, 'has%2Fslash');
+    strictEqual(router.part, 'has%23hash');
+    strictEqual(router.rest, 'has%20space');
   });
 
   test("routes (two part - encoded reserved char)", 2, function() {
@@ -150,7 +152,7 @@ $(document).ready(function() {
     Backbone.history.navigate(route, {trigger: true});
     Backbone.history.checkUrl();
     equal(router.query, 'nyc');
-    equal(router.page, 'a/b');
+    equal(router.page, 'a%2Fb');
   });
 
   test("routes (two part - query params)", 3, function() {
