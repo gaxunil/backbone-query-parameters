@@ -194,6 +194,36 @@ $(document).ready(function() {
     equal(router.queryParams.array4[0], 'e|');
   });
 
+  test("routes (two part - query params - hash and list - location, second form)", 24, function() {
+    var route = 'search/nyc/p10/?a=b&a2=x&a2=y&a3=x&a3=y&a3=z&&a4=x=y=z&b.c=d&b.d=e&b.e.f=g&array1=|a&array2=a|b&array3=|c|d&array4=|e%7C';
+    Backbone.history.navigate(route, {trigger: true});
+    Backbone.history.checkUrl();
+    equal(router.query, 'nyc');
+    equal(router.page, '10');
+    equal(router.queryParams.a, 'b');
+    equal(router.queryParams.a2.length, 2);
+    equal(router.queryParams.a2[0], 'x');
+    equal(router.queryParams.a2[1], 'y');
+    equal(router.queryParams.a3.length, 3);
+    equal(router.queryParams.a3[0], 'x');
+    equal(router.queryParams.a3[1], 'y');
+    equal(router.queryParams.a3[2], 'z');
+    equal(router.queryParams.a4, 'x=y=z');
+    equal(router.queryParams.b.c, 'd');
+    equal(router.queryParams.b.d, 'e');
+    equal(router.queryParams.b.e.f, 'g');
+    equal(router.queryParams.array1.length, 1);
+    equal(router.queryParams.array1[0], 'a');
+    equal(router.queryParams.array2.length, 2);
+    equal(router.queryParams.array2[0], 'a');
+    equal(router.queryParams.array2[1], 'b');
+    equal(router.queryParams.array3.length, 2);
+    equal(router.queryParams.array3[0], 'c');
+    equal(router.queryParams.array3[1], 'd');
+    equal(router.queryParams.array4.length, 1);
+    equal(router.queryParams.array4[0], 'e|');
+  });
+
   test("routes (two part - query params)", 3, function() {
     var route = 'search/nyc/p10?a=b';
     Backbone.history.navigate(route, {trigger: true});
@@ -244,6 +274,17 @@ $(document).ready(function() {
 
   test("routes (decoding with 3 repeated values)", 5, function() {
     var route = 'search/nyc/p10?f.foo.bar=foo%20%2B%20bar&f.foo.bar=hello%20qux&f.foo.bar=baz%20baz';
+    Backbone.history.navigate(route, {trigger: true});
+    Backbone.history.checkUrl();
+    equal(router.query, 'nyc');
+    equal(router.page, '10');
+    equal(router.queryParams.f.foo.bar[0], 'foo + bar');
+    equal(router.queryParams.f.foo.bar[1], 'hello qux');
+    equal(router.queryParams.f.foo.bar[2], 'baz baz');
+  });
+
+  test("routes (decoding with 3 repeated values), second form", 5, function() {
+    var route = 'search/nyc/p10/?f.foo.bar=foo%20%2B%20bar&f.foo.bar=hello%20qux&f.foo.bar=baz%20baz';
     Backbone.history.navigate(route, {trigger: true});
     Backbone.history.checkUrl();
     equal(router.query, 'nyc');

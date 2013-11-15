@@ -113,7 +113,8 @@ _.extend(Backbone.Router.prototype, {
                  // If only `[^?]` is used then paths like signin/photos will fail
                  // while paths with `?` anywhere, like `signin/photos?`, will succeed.
                  .replace(splatParam, '([^??]*?)');
-    route += '(\\?.*)?';
+
+    route += '\/?(\\?.*)?';
     var rtn = new RegExp('^' + route + '$');
 
     // use the rtn value to hold some parameter data
